@@ -1,0 +1,47 @@
+Rust Git系统实现
+
+
+.git文件夹内容
+.git 文件夹是 Git 仓库的核心，包含了所有版本控制所需的数据和元信息。理解这些文件和目录有助于深入了解 Git 的工作原理。
+
+.git/
+├── HEAD                   ── 当前分支或 commit 指针 (ref: refs/heads/main)
+├── config                 ── 仓库配置文件（用户信息、远程仓库）
+├── index                  ── 暂存区（stage）二进制文件
+├── description            ── 仓库描述（GitWeb 显示）
+├── COMMIT_EDITMSG         ── 临时存储上一次提交信息
+├── FETCH_HEAD             ── 最近一次 fetch 操作的引用
+├── hooks/                 ── Git 钩子脚本目录
+│    ├── pre-commit        ── 提交前触发
+│    ├── post-commit       ── 提交后触发
+│    ├── post-receive      ── 推送后触发
+│    └── ...               ── 其他钩子脚本
+├── refs/                  ── 存放指针（引用）目录
+│    ├── heads/            ── 本地分支指针（main、dev 等）
+│    ├── tags/             ── 标签（固定提交版本）
+│    └── remotes/          ── 远程分支状态（origin/main 等）
+└── objects/               ── Git 对象存储
+     ├── info/             ── 附加信息
+     ├── pack/             ── 压缩打包对象
+     └── <hash 文件>       ── blob/tree/commit/tag 对象（zlib 压缩）
+
+
+
+index 文件结构
+index 文件是 Git 暂存区的核心，存储了即将提交的文件信息。它采用二进制格式，包含以下主要部分： 
+1. Header（头部）
+   - Signature（4 字节）: 固定为 "DIRC"
+   - Version（4 字节）: 版本号，通常为 2
+   - Number of entries（4 字节）: 索引条目数量
+2. Entries（条目）
+   - 每个条目包含以下字段： 
+     - ctime（8 字节）: 文件创建时间
+     - mtime（8 字节）: 文件修改时间
+     - mode（4 字节）: 文件权限和类型
+     - size（4 字节）: 文件大小
+     - sha1（20 字节）: 文件内容的 SHA-1 哈希值
+     - path（可变长度）: 文件路径，null 结尾
+3. Footer（尾部） (未实现)
+   - SHA-1 checksum（20 字节）: 整个 index 文件的校验和
+理解 index 文件结构有助于深入了解 Git 如何管理暂存区的文件状态。
+
