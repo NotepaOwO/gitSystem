@@ -1,4 +1,4 @@
-use crate::utils::fs::{create_dir, write_file_bytes};
+use crate::utils::fs::{create_dir, read_file_bytes, write_file_bytes};
 use crate::utils::hash::sha1;
 use std::path::Path;
 
@@ -11,6 +11,62 @@ pub enum Object {
 }
 
 impl Object {
+    /// 从仓库加载 Git 对象内容（Blob / Tree / Commit / Tag）
+    ///
+    /// # 参数
+    /// - `repo_path`: 仓库根路径（包含 .git 文件夹）
+    /// - `sha`: 对象 SHA1 哈希值（40 位十六进制字符串）
+    ///
+    /// # 返回
+    /// - `Some(Vec<u8>)`：对象的原始二进制内容（不含 header）  
+    /// - `None`：对象不存在或读取失败
+    ///
+    /// # 功能说明
+    /// - Git 对象存储在 `.git/objects/xx/yyyy...`，xx 是 SHA 前两位，yyyy... 是剩余 38 位。
+    /// - 文件内容包含 header + 数据，例如：
+    ///     - Blob:  `blob 12\0<file content>`  
+    ///     - Tree:  `tree 45\0<tree content>`  
+    ///     - Commit: `commit 123\0<commit content>`
+    /// - 本方法会去掉 header，返回纯数据部分。
+    pub fn load(repo_path: &str, sha: &str) -> Option<Vec<u8>> {
+        // ✅ 校验 SHA 长度
+        if sha.len() < 40 {
+            return None;
+        }
+
+        // 1️⃣ 构造对象路径
+        // SHA: 0123456789abcdef...
+        // 文件路径: .git/objects/01/23456789abcdef...
+        let dir = &sha[0..2];
+        let file = &sha[2..];
+        let obj_path = Path::new(repo_path)
+            .join(".git")
+            .join("objects")
+            .join(dir)
+            .join(file);
+
+        // 2️⃣ 文件不存在直接返回 None
+        if !obj_path.exists() {
+            return None;
+        }
+
+        // 3️⃣ 读取对象文件
+        let data = match read_file_bytes(obj_path.to_str().unwrap()) {
+            Ok(d) => d,
+            Err(_) => return None,
+        };
+
+        // 4️⃣ 查找 header 结束位置（\0 分隔符）
+        //    header 示例: "blob 123\0" -> 返回 \0 的位置
+        let pos = match data.iter().position(|&b| b == 0) {
+            Some(p) => p,
+            None => 0, // 若没有找到 header，直接返回整个文件
+        };
+
+        // 5️⃣ 返回 header 之后的数据部分
+        Some(data[pos + 1..].to_vec())
+    }
+
     /// 保存对象到仓库，返回 SHA1 哈希
     pub fn save(&self, repo_path: &str) -> String {
         // 构造 header + 数据

@@ -63,20 +63,21 @@ pub fn git_execute() {
             git_commit(&repo_path.unwrap(), msg);
         }
 
-        // // ------------------ branch ------------------
-        // Some(("branch", sub_m)) => {
-        //     let branch_name = sub_m
-        //         .get_one::<String>("branch_name")
-        //         .map(|s| s.as_str());
-        //     let delete = sub_m.get_flag("delete");
-        //     git_branch(&repo_path.unwrap(), branch_name, delete);
-        // }
+        // ------------------ branch ------------------
+        Some(("branch", sub_m)) => {
+            let branch_name = sub_m
+                .get_one::<String>("branch_name")
+                .map(|s| s.as_str());
+            let delete = sub_m.get_flag("delete");
+            git_branch(&repo_path.unwrap(), branch_name, delete);
+        }
 
-        // // ------------------ checkout ------------------
-        // Some(("checkout", sub_m)) => {
-        //     let target = sub_m.get_one::<String>("target").expect("Missing <target>");
-        //     git_checkout(&repo_path.unwrap(), target);
-        // }
+        // ------------------ checkout ------------------
+        Some(("checkout", sub_m)) => {
+            let target = sub_m.get_one::<String>("target").expect("Missing <target>");
+            let create_new = sub_m.get_flag("new_branch"); // 对应 -b
+            git_checkout(&repo_path.unwrap(), target, create_new);
+        }
 
         // // ------------------ merge ------------------
         // Some(("merge", sub_m)) => {

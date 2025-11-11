@@ -18,6 +18,14 @@ pub fn create_dir_all(path: &Path) -> std::io::Result<()> {
     Ok(())
 }
 
+/// 递归删除目录及其所有内容
+pub fn remove_dir_all(path: &Path) -> std::io::Result<()> {
+    if path.exists() && path.is_dir() {
+        fs::remove_dir_all(path)?;
+    }
+    Ok(())
+}
+
 /// 列出指定目录下的所有文件和子目录
 /// 
 /// # 参数

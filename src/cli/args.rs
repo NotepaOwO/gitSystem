@@ -91,6 +91,14 @@ pub fn git_parse_args() -> ArgMatches {
                         .help("Branch or commit to checkout")
                         .required(true),
                 )
+                .arg(
+                    Arg::new("new_branch")
+                        .short('b')
+                        .long("create")
+                        .help("Create a new branch and switch to it")
+                        .action(ArgAction::SetTrue)
+                        .required(false),
+                )
         )
 
         // 合并分支

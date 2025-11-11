@@ -33,7 +33,7 @@ impl Repository {
         create_file(git_dir.join("index").to_str().unwrap());         // 暂存区索引文件
 
         // 设置 HEAD 默认指向 main 分支
-        std::fs::write(git_dir.join("HEAD"), "ref: refs/heads/master\n").unwrap();
+        std::fs::write(git_dir.join("HEAD"), "ref: refs/heads/main\n").unwrap();
 
         Repository { path: path.to_string() }
     }
