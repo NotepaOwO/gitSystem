@@ -75,10 +75,13 @@ impl Index {
         let size = metadata.len();
 
         // ✅ 使用相对仓库根路径
-        let relative_path = file_path.strip_prefix(&self.repo_path)
-            .unwrap_or(file_path)
-            .to_path_buf();
-
+        let tmp = file_path.strip_prefix(&self.repo_path)
+            .unwrap_or(file_path);
+        let relative_path = tmp.strip_prefix(Path::new("./")).
+            unwrap_or(tmp).
+            to_path_buf();
+            
+        
         let entry = IndexEntry {
             path: relative_path.clone(),
             sha,
